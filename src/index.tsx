@@ -266,6 +266,10 @@ const ModalizeBase = (
     }
 
     setModalPosition(newPosition);
+
+    if (onPositionChange) {
+      onPositionChange(newPosition);
+    }
     Animated.parallel([
       Animated.timing(overlay, {
         toValue: alwaysOpenValue && dest === 'default' ? 0 : 1,
