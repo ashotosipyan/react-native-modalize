@@ -144,6 +144,7 @@ const ModalizeBase = (
   const adjustValue = adjustToContentHeight ? undefined : endHeight;
   const snaps = snapPoint ? [0, endHeight - snapPoint, endHeight] : [0, endHeight];
 
+  const [scrollViewOffsetTop, setScrollViewOffsetTop] = React.useState(0);
   const [modalHeightValue, setModalHeightValue] = React.useState(adjustValue);
   const [lastSnap, setLastSnap] = React.useState(snapPoint ? endHeight - snapPoint : 0);
   const [isVisible, setIsVisible] = React.useState(false);
@@ -243,13 +244,15 @@ const ModalizeBase = (
       toValue = (modalHeightValue || 0) - snapPoint;
     }
 
-    if (panGestureAnimatedValue && (alwaysOpenValue || snapPoint)) {
+    if (panGestureAnimatedValue && (alwaysOpenValue || snapPoint) && dest !== 'top') {
       toPanValue = 0;
     } else if (
       panGestureAnimatedValue &&
       !alwaysOpenValue &&
       (dest === 'top' || dest === 'default')
     ) {
+      toPanValue = 1;
+    } else if (panGestureAnimatedValue && (alwaysOpenValue || snapPoint) && dest === 'top') {
       toPanValue = 1;
     }
 
@@ -635,6 +638,8 @@ const ModalizeBase = (
           value = 0;
         } else if (modalPosition === 'top' && translationY <= 0) {
           value = 1;
+        } else if (scrollViewOffsetTop !== 0) {
+          value = 1;
         } else {
           value = y;
         }
@@ -670,6 +675,10 @@ const ModalizeBase = (
         </Animated.View>
       </PanGestureHandler>
     );
+  };
+
+  const onScrollScrollView = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    setScrollViewOffsetTop(event.nativeEvent.contentOffset.y);
   };
 
   const renderComponent = (
@@ -761,7 +770,7 @@ const ModalizeBase = (
     }
 
     return (
-      <Animated.ScrollView {...scrollViewProps} {...opts}>
+      <Animated.ScrollView {...scrollViewProps} {...opts} onScroll={onScrollScrollView}>
         {children}
       </Animated.ScrollView>
     );
